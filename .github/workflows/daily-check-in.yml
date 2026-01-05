@@ -2,8 +2,8 @@ name: Daily Check-in
 
 on:
   schedule:
-    #- cron: '0 1 * * *'  # 每天1点 UTC 时间执行
-    - cron: '0 */12 * * *'  # 每12小时执行一次
+    # 每天 01:00 UTC 执行（新加坡时间 UTC+8 为 09:00）
+    - cron: '0 1 * * *'
 
   workflow_dispatch:
 
@@ -35,7 +35,25 @@ jobs:
           GOTIFY_URL: ${{ secrets.GOTIFY_URL }}
           GOTIFY_TOKEN: ${{ secrets.GOTIFY_TOKEN }}
           SC3_PUSH_KEY: ${{ secrets.SC3_PUSH_KEY }}
-          BROWSE_ENABLED: ${{ secrets.BROWSE_ENABLED }}
+          # 强制启用浏览任务
+          BROWSE_ENABLED: "true"
+          # ---- 访问节奏（目标：每帖总停留 5~8 秒）----
+          POST_TARGET_MIN: "5"
+          POST_TARGET_MAX: "8"
+          # 每天浏览 50 个帖子
+          MAX_TOPICS: "50"
+          # 滚动参数（单帖内部动作）。实际每帖总耗时由 POST_TARGET_* 兜底补齐。
+          SCROLL_STEPS: "2"
+          SCROLL_DELAY_MIN: "0.4"
+          SCROLL_DELAY_MAX: "0.9"
+          # 额外的“帖子间等待”设为 0，避免把每帖总耗时推到 POST_TARGET_MAX 之上
+          TOPIC_DELAY_MIN: "0"
+          TOPIC_DELAY_MAX: "0"
+          # 连续失败时的退避（秒）
+          BACKOFF_MIN: "6"
+          BACKOFF_MAX: "12"
+          # 只读模式开关（true=不点赞）。默认 false。
+          DRY_RUN: "false"
         run: |
           python main.py
 
